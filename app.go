@@ -16,7 +16,7 @@ package beego
 
 import (
 	"crypto/tls"
-	"crypto/x509"
+	"crypto/sm2"
 	"fmt"
 	"io/ioutil"
 	"net"
@@ -189,7 +189,7 @@ func (app *App) Run(mws ...MiddleWare) {
 				app.Server.TLSConfig = &tls.Config{GetCertificate: m.GetCertificate}
 				BConfig.Listen.HTTPSCertFile, BConfig.Listen.HTTPSKeyFile = "", ""
 			} else if BConfig.Listen.EnableMutualHTTPS {
-				pool := x509.NewCertPool()
+				pool := sm2.NewCertPool()
 				data, err := ioutil.ReadFile(BConfig.Listen.TrustCaFile)
 				if err != nil {
 					BeeLogger.Info("MutualHTTPS should provide TrustCaFile")

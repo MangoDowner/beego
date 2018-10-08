@@ -2,7 +2,7 @@ package grace
 
 import (
 	"crypto/tls"
-	"crypto/x509"
+	"crypto/sm2"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -152,7 +152,7 @@ func (srv *Server) ListenAndServeMutualTLS(certFile, keyFile, trustFile string) 
 		return
 	}
 	srv.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
-	pool := x509.NewCertPool()
+	pool := sm2.NewCertPool()
 	data, err := ioutil.ReadFile(trustFile)
 	if err != nil {
 		log.Println(err)

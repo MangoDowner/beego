@@ -18,6 +18,7 @@ import (
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
+	"crypto/sm2"
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"errors"
@@ -622,7 +623,7 @@ func (m *Manager) certState(ck certKey) (*certState, error) {
 
 // authorizedCert starts the domain ownership verification process and requests a new cert upon success.
 // The key argument is the certificate private key.
-func (m *Manager) authorizedCert(ctx context.Context, key crypto.Signer, ck certKey) (der [][]byte, leaf *x509.Certificate, err error) {
+func (m *Manager) authorizedCert(ctx context.Context, key crypto.Signer, ck certKey) (der [][]byte, leaf *sm2.Certificate, err error) {
 	client, err := m.acmeClient(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -989,7 +990,7 @@ type certState struct {
 	locked bool              // locked for read/write
 	key    crypto.Signer     // private key for cert
 	cert   [][]byte          // DER encoding
-	leaf   *x509.Certificate // parsed cert[0]; always non-nil if cert != nil
+	leaf   *sm2.Certificate // parsed cert[0]; always non-nil if cert != nil
 }
 
 // tlscert creates a tls.Certificate from s.key and s.cert.
@@ -1049,7 +1050,7 @@ func parsePrivateKey(der []byte) (crypto.Signer, error) {
 // are valid. It doesn't do any revocation checking.
 //
 // The returned value is the verified leaf cert.
-func validCert(ck certKey, der [][]byte, key crypto.Signer) (leaf *x509.Certificate, err error) {
+func validCert(ck certKey, der [][]byte, key crypto.Signer) (leaf *sm2.Certificate, err error) {
 	// parse public part(s)
 	var n int
 	for _, b := range der {
@@ -1060,7 +1061,7 @@ func validCert(ck certKey, der [][]byte, key crypto.Signer) (leaf *x509.Certific
 	for _, b := range der {
 		n += copy(pub[n:], b)
 	}
-	x509Cert, err := x509.ParseCertificates(pub)
+	x509Cert, err := sm2.ParseCertificates(pub)
 	if err != nil || len(x509Cert) == 0 {
 		return nil, errors.New("acme/autocert: no public key found")
 	}
